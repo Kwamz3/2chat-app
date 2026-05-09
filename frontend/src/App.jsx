@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import NameModal from './components/NameModal';
 import ChatWindow from './components/ChatWindow';
@@ -7,33 +7,36 @@ import MessageInput from './components/MessageInput';
 const SOCKET_SERVER_URL = 'http://localhost:5000';
 
 function App() {
-  const [socket, setSocket] = useState(null);
+  const socketRef = useRef(null);
   const [userName, setUserName] = useState('');
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    const newSocket = io(SOCKET_SERVER_URL);
-    setSocket(newSocket);
+    socketRef.current = io(SOCKET_SERVER_URL);
 
-    newSocket.on('chat_message', (data) => {
+    socketRef.current.on('chat_message', (data) => {
       setMessages((prevMessages) => [...prevMessages, data]);
     });
 
-    return () => newSocket.close();
-  }, [setSocket]);
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+    };
+  }, []);
 
   const handleJoin = (name) => {
     setUserName(name);
   };
 
   const handleSendMessage = (messageText) => {
-    if (socket && userName) {
+    if (socketRef.current && userName) {
       const messageData = {
         name: userName,
         message: messageText,
         timestamp: new Date().toISOString(),
       };
-      socket.emit('chat_message', messageData);
+      socketRef.current.emit('chat_message', messageData);
     }
   };
 
