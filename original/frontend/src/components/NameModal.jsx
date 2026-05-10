@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const NameModal = ({ onJoin }) => {
+const NameModal = ({ onJoin, error }) => {
   const [name, setName] = useState('');
 
   const handleSubmit = (e) => {
@@ -23,6 +23,7 @@ const NameModal = ({ onJoin }) => {
             onChange={(e) => setName(e.target.value)}
             autoFocus
           />
+          {error && <p className="error-message" style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
           <button type="submit" disabled={!name.trim()}>
             Join Chat
           </button>

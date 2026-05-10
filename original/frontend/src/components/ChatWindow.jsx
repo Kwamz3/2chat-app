@@ -11,13 +11,13 @@ const ChatWindow = ({ messages, currentUserName }) => {
   return (
     <div className="chat-window">
       {messages.map((msg, index) => {
-        const isMe = msg.name === currentUserName;
+        const isMe = msg.from === currentUserName;
         return (
           <div
             key={index}
             className={`message-wrapper ${isMe ? 'me' : 'other'}`}
           >
-            <span className="message-sender">{isMe ? 'Me' : msg.name}</span>
+            <span className="message-sender">{isMe ? 'Me' : msg.from}</span>
             <div className="message-bubble">{msg.message}</div>
           </div>
         );
@@ -28,3 +28,4 @@ const ChatWindow = ({ messages, currentUserName }) => {
 };
 
 export default ChatWindow;
+
