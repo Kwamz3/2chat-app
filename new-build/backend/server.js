@@ -16,3 +16,18 @@ const io = new Server(server, {
 });
 
 // ***** State Management *****
+const activeUsers = new Map();
+const allUsers = new Map();
+const conversations = new Map();
+
+const getRoomId = (userA, userB) => {
+    return [userA, userB].sort().join('_');
+};
+
+const emitUserList = () => {
+    const userList = Array.from(allUsers.entries()).map(([username, status]) => ({
+        username,
+        isOnline: status.isOnline
+    }));
+    io.emit('users_update', userList);
+};
