@@ -1,4 +1,3 @@
-import React from 'react';
 
 const UserList = ({ users, currentUser, onSelectUser }) => {
   const otherUsers = users.filter((u) => u.username !== currentUser);

@@ -90,7 +90,7 @@ function App() {
             </div>
           </div>
         ) : (
-          <h1>Real-Time Chat</h1>
+          <h1>2Chat</h1>
         )}
       </header>
 
