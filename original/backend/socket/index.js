@@ -22,6 +22,19 @@ export const broadcastUserList = (io) => {
       };
     });
 
+    // Resolve the announcements channel last message
+    const announcementHistory = conversations.get("announcements") || [];
+    const lastAnnouncement = announcementHistory.length > 0 ? announcementHistory[announcementHistory.length - 1] : null;
+
+    // Prepend the announcements channel so it is always at the top
+    userList.unshift({
+      username: "2Chat Announcements",
+      isOnline: true,
+      isAnnouncementChannel: true,
+      lastSeen: null,
+      lastMessage: lastAnnouncement,
+    });
+
     socket.emit("users_update", userList);
   }
 };

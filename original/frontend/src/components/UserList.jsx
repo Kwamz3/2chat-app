@@ -44,15 +44,24 @@ const UserList = ({ users, currentUser, onSelectUser }) => {
             return (
               <div
                 key={user.username}
-                className={`user-item ${user.isOnline ? 'online' : 'offline'}`}
+                className={`user-item ${user.isAnnouncementChannel ? 'official-channel' : (user.isOnline ? 'online' : 'offline')}`}
                 onClick={() => onSelectUser(user.username)}
               >
-                <div className="user-avatar">
-                  {user.username.charAt(0).toUpperCase()}
+                <div className={`user-avatar ${user.isAnnouncementChannel ? 'official' : ''}`}>
+                  {user.isAnnouncementChannel ? '📢' : user.username.charAt(0).toUpperCase()}
                 </div>
                 <div className="user-info">
                   <div className="user-info-top">
-                    <span className="user-name">{user.username}</span>
+                    <span className="user-name" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {user.username}
+                      {user.isAnnouncementChannel && (
+                        <span className="official-badge">
+                          <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                          </svg>
+                        </span>
+                      )}
+                    </span>
                     {hasLastMsg && (
                       <span className="last-message-time">
                         {formatMessageTime(lastMsg.timestamp)}
@@ -61,16 +70,19 @@ const UserList = ({ users, currentUser, onSelectUser }) => {
                   </div>
                   <div className="user-info-bottom">
                     <span className="last-message-preview">
-                      {hasLastMsg ? lastMsgText : (user.isOnline ? 'Online' : 'Offline')}
+                      {hasLastMsg ? lastMsgText : (user.isAnnouncementChannel ? 'System announcements' : (user.isOnline ? 'Online' : 'Offline'))}
                     </span>
-                    {!user.isOnline && (
+                    {!user.isOnline && !user.isAnnouncementChannel && (
                       <span className="last-seen-status">
                         Last seen {formatLastSeen(user.lastSeen)}
                       </span>
                     )}
+                    {user.isAnnouncementChannel && (
+                      <span className="official-label">Official</span>
+                    )}
                   </div>
                 </div>
-                {user.isOnline && <div className="online-indicator online"></div>}
+                {user.isOnline && !user.isAnnouncementChannel && <div className="online-indicator online"></div>}
               </div>
             );
           })

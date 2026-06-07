@@ -8,6 +8,27 @@ export const registerMessageHandlers = (io, socket, broadcastUserList) => {
 
     if (!from || !to) return;
 
+    // Intercept messages sent to the Announcements channel
+    if (to === "2Chat Announcements") {
+      if (from.toLowerCase() !== "admin") return;
+
+      const roomId = "announcements";
+      const messageData = { from: "2Chat Announcements", to: "All", message, timestamp };
+      
+      if (!conversations.has(roomId)) {
+        conversations.set(roomId, []);
+      }
+      conversations.get(roomId).push(messageData);
+
+      // Broadcast to all connected clients
+      io.emit('receive_private_message', messageData);
+
+      if (typeof broadcastUserList === 'function') {
+        broadcastUserList();
+      }
+      return;
+    }
+
     const recipientStatus = allUsers.get(to);
     if (!recipientStatus || !recipientStatus.isOnline) return;
 

@@ -15,6 +15,18 @@ function App() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
 
+  // Refs to prevent stale closures in socket event listeners
+  const selectedUserRef = useRef(selectedUser);
+  const userNameRef = useRef(userName);
+
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
+
+  useEffect(() => {
+    userNameRef.current = userName;
+  }, [userName]);
+
   useEffect(() => {
     socketRef.current = io(SOCKET_SERVER_URL);
 
@@ -23,7 +35,15 @@ function App() {
     });
 
     socketRef.current.on('receive_private_message', (data) => {
-      setMessages((prev) => [...prev, data]);
+      const activeChat = selectedUserRef.current;
+      const currentMe = userNameRef.current;
+
+      const isAnnouncement = activeChat === "2Chat Announcements" && data.from === "2Chat Announcements";
+      const isCurrentChat = (data.from === activeChat && data.to === currentMe) || (data.from === currentMe && data.to === activeChat);
+
+      if (isAnnouncement || isCurrentChat) {
+        setMessages((prev) => [...prev, data]);
+      }
     });
 
     return () => {
@@ -88,6 +108,14 @@ function App() {
     return `Last seen on ${date.toLocaleDateString()}`;
   };
 
+  // Announcements configuration
+  const isAnnouncement = selectedUser === "2Chat Announcements";
+  const isAdmin = userName.toLowerCase() === "admin";
+  const isInputDisabled = isAnnouncement ? !isAdmin : !selectedUserStatus;
+  const placeholderText = isAnnouncement
+    ? (isAdmin ? "Type an announcement..." : "Only admins can send messages here")
+    : (selectedUserStatus ? "Type a message..." : "User is offline");
+
   return (
     <div className="app-container">
       {!userName && <NameModal onJoin={handleJoin} error={loginError} />}
@@ -100,13 +128,28 @@ function App() {
               Back
             </button>
             <div className="chat-with-info">
-              <h1>{selectedUser}</h1>
-              <p className={selectedUserStatus ? 'status-online' : 'status-offline'}>
-                {selectedUserStatus ? 'Online' : formatLastSeen(selectedUserLastSeen)}
-              </p>
+              {isAnnouncement ? (
+                <>
+                  <h1 className="chat-header-title">
+                    {selectedUser}
+                    <span className="official-badge-header">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                      </svg>
+                    </span>
+                  </h1>
+                  <p className="status-official">Official Channel</p>
+                </>
+              ) : (
+                <>
+                  <h1>{selectedUser}</h1>
+                  <p className={selectedUserStatus ? 'status-online' : 'status-offline'}>
+                    {selectedUserStatus ? 'Online' : formatLastSeen(selectedUserLastSeen)}
+                  </p>
+                </>
+              )}
             </div>
           </div>
-
         ) : (
           <h1>2Chat</h1>
         )}
@@ -123,7 +166,11 @@ function App() {
       {selectedUser && (
         <>
           <ChatWindow messages={messages} currentUserName={userName} />
-          <MessageInput onSendMessage={handleSendMessage} disabled={!selectedUserStatus} />
+          <MessageInput 
+            onSendMessage={handleSendMessage} 
+            disabled={isInputDisabled} 
+            placeholder={placeholderText}
+          />
         </>
       )}
     </div>
