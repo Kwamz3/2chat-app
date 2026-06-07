@@ -1,6 +1,6 @@
 import { allUsers, activeUsers } from "../services/state.js";
 
-const registerLoginHandlers = (io, socket) => {
+export const registerLoginHandlers = (io, socket) => {
   socket.on("login", (username, callback) => {
     const isAlreadyOnline = Array.from(activeUsers.values()).includes(username);
 
