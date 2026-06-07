@@ -1,7 +1,7 @@
 import { activeUsers, allUsers, conversations } from '../services/state.js';
 import { getRoomId } from '../services/room.js';
 
-export const registerMessageHandlers = (io, socket) => {
+export const registerMessageHandlers = (io, socket, broadcastUserList) => {
   socket.on('send_private_message', (data) => {
     const { to, message, timestamp } = data;
     const from = activeUsers.get(socket.id);
@@ -33,6 +33,10 @@ export const registerMessageHandlers = (io, socket) => {
     }
 
     socket.emit('receive_private_message', messageData);
+
+    if (typeof broadcastUserList === 'function') {
+      broadcastUserList();
+    }
   });
 
   socket.on('fetch_chat_history', (otherUsername, callback) => {
@@ -44,4 +48,4 @@ export const registerMessageHandlers = (io, socket) => {
 
     if (typeof callback === 'function') callback(history);
   });
-};
+};

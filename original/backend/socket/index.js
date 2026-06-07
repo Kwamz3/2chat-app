@@ -1,7 +1,30 @@
 import { Server } from "socket.io";
 import { registerLoginHandlers } from "./login.js";
 import { registerMessageHandlers } from "./messages.js";
-import { activeUsers, allUsers } from "../services/state.js";
+import { activeUsers, allUsers, conversations } from "../services/state.js";
+import { getRoomId } from "../services/room.js";
+
+export const broadcastUserList = (io) => {
+  for (const [socketId, socket] of io.of("/").sockets.entries()) {
+    const currentUsername = activeUsers.get(socketId);
+    if (!currentUsername) continue;
+
+    const userList = Array.from(allUsers.entries()).map(([name, status]) => {
+      const roomId = getRoomId(currentUsername, name);
+      const history = conversations.get(roomId) || [];
+      const lastMessage = history.length > 0 ? history[history.length - 1] : null;
+
+      return {
+        username: name,
+        isOnline: status.isOnline,
+        lastSeen: status.lastSeen || null,
+        lastMessage: lastMessage,
+      };
+    });
+
+    socket.emit("users_update", userList);
+  }
+};
 
 export const setupSocket = (server) => {
   const io = new Server(server, {
@@ -12,11 +35,11 @@ export const setupSocket = (server) => {
   });
 
   io.on("connection", (socket) => {
-    // Register login handlers
-    registerLoginHandlers(io, socket);
+    // Register login handlers with broadcast callback
+    registerLoginHandlers(io, socket, () => broadcastUserList(io));
 
-    // Register message handlers
-    registerMessageHandlers(io, socket);
+    // Register message handlers with broadcast callback
+    registerMessageHandlers(io, socket, () => broadcastUserList(io));
 
     // Handle user disconnect
     socket.on("disconnect", () => {
@@ -25,18 +48,16 @@ export const setupSocket = (server) => {
         activeUsers.delete(socket.id);
         allUsers.set(username, {
           isOnline: false,
+          lastSeen: new Date().toISOString(),
         });
 
         // Broadcast the updated user list to all connected clients
-        const userList = Array.from(allUsers.entries()).map(([name, status]) => ({
-          username: name,
-          isOnline: status.isOnline,
-        }));
-        io.emit("users_update", userList);
+        broadcastUserList(io);
       }
     });
   });
 };
 
 export default setupSocket;
+
 

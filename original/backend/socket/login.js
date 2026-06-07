@@ -1,6 +1,6 @@
 import { allUsers, activeUsers } from "../services/state.js";
 
-export const registerLoginHandlers = (io, socket) => {
+export const registerLoginHandlers = (io, socket, broadcastUserList) => {
   socket.on("login", (username, callback) => {
     const isAlreadyOnline = Array.from(activeUsers.values()).includes(username);
 
@@ -17,6 +17,7 @@ export const registerLoginHandlers = (io, socket) => {
     activeUsers.set(socket.id, username);
     allUsers.set(username, {
       isOnline: true,
+      lastSeen: null,
     });
 
     if (typeof callback === "function") {
@@ -25,11 +26,9 @@ export const registerLoginHandlers = (io, socket) => {
       });
     }
 
-    const userList = Array.from(allUsers.entries()).map(([name, status])=>({
-        username: name,
-        isOnline: status.isOnline
-    }))
-
-    io.emit('users_update', userList)
+    if (typeof broadcastUserList === "function") {
+      broadcastUserList();
+    }
   });
 };
+

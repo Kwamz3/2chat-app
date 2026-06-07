@@ -70,6 +70,23 @@ function App() {
 
   // Find status of selected user
   const selectedUserStatus = users.find(u => u.username === selectedUser)?.isOnline;
+  const selectedUserLastSeen = users.find(u => u.username === selectedUser)?.lastSeen;
+
+  const formatLastSeen = (isoString) => {
+    if (!isoString) return 'Offline';
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 1) return 'Last seen just now';
+    if (diffMins < 60) return `Last seen ${diffMins}m ago`;
+
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `Last seen ${diffHours}h ago`;
+
+    return `Last seen on ${date.toLocaleDateString()}`;
+  };
 
   return (
     <div className="app-container">
@@ -85,10 +102,11 @@ function App() {
             <div className="chat-with-info">
               <h1>{selectedUser}</h1>
               <p className={selectedUserStatus ? 'status-online' : 'status-offline'}>
-                {selectedUserStatus ? 'Online' : 'Offline'}
+                {selectedUserStatus ? 'Online' : formatLastSeen(selectedUserLastSeen)}
               </p>
             </div>
           </div>
+
         ) : (
           <h1>2Chat</h1>
         )}
