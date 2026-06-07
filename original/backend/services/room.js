@@ -1,5 +1,8 @@
 export const getRoomId = (userA, userB) => {
-  return [userA, userB].sort().join("_");
+  return [userA, userB]
+    .map((username) => username.toLowerCase())
+    .sort()
+    .join("_");
 };
 
 export default getRoomId;
