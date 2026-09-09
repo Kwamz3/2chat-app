@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
-const MessageInput = ({ onSendMessage }) => {
+const MessageInput = ({ onSendMessage, disabled, placeholder }) => {
   const [message, setMessage] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (message.trim()) {
+    if (message.trim() && !disabled) {
       onSendMessage(message.trim());
       setMessage('');
     }
@@ -17,14 +17,15 @@ const MessageInput = ({ onSendMessage }) => {
         <input
           type="text"
           className="message-input"
-          placeholder="Type a message..."
+          placeholder={placeholder || (disabled ? "This channel is read-only" : "Type a message...")}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          disabled={disabled}
         />
         <button
           type="submit"
           className="send-button"
-          disabled={!message.trim()}
+          disabled={disabled || !message.trim()}
           aria-label="Send message"
         >
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
