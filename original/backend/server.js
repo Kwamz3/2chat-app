@@ -7,5 +7,7 @@ const server = http.createServer(app);
 setupSocket(server);
 
 server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:5000`);
+  console.log(`Server is running on ${PORT}`);
+  console.log(`Health check is running on http://loalhost:${PORT}/health`);
+  console.log(`Root: http://loalhost:${PORT}/`);
 });
