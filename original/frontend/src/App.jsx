@@ -5,7 +5,9 @@ import ChatWindow from './components/ChatWindow';
 import MessageInput from './components/MessageInput';
 import UserList from './components/UserList';
 
-const SOCKET_SERVER_URL = 'http://localhost:5000';
+const production = 'https://twochat-app-ecib.onrender.com/';
+// const testing = 'http://localhost:5000';
+const SOCKET_SERVER_URL = production;
 
 function App() {
   const socketRef = useRef(null);
